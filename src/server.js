@@ -11,7 +11,7 @@ const PORT = Number(process.env.PORT);
 export const setupServer = () => {
   const app = express();
 
-  app.use('/api', contactsRoutes);
+  app.use(contactsRoutes);
 
   app.use(cors());
   app.use(
