@@ -28,3 +28,11 @@ const getAllContacts = async () => {
 export default {
   getAllContacts,
 };
+export const getContactByIdService = async (contactId) => {
+  try {
+    const contact = await Contact.findById(contactId);
+    return contact;
+  } catch (error) {
+    throw error;
+  }
+};

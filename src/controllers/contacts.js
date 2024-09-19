@@ -4,6 +4,7 @@ import {
   createContactService,
   updateContactService,
   deleteContactService,
+  getContactByIdService,
 } from '../services/contacts.js';
 
 export const createContact = async (req, res, next) => {
@@ -34,7 +35,7 @@ export const updateContact = async (req, res, next) => {
   const updatedContact = await updateContactService(contactId, contactData);
 
   if (!updatedContact) {
-    next(createError(404, 'Contact not found'));
+    next(createHttpError(404, 'Contact not found'));
   }
 
   res.status(200).json({
@@ -50,7 +51,7 @@ export const deleteContact = async (req, res, next) => {
   const deletedContact = await deleteContactService(contactId);
 
   if (!deletedContact) {
-    next(createError(404, 'Contact not found'));
+    next(createHttpError(404, 'Contact not found'));
   }
 
   res.status(204).send();
@@ -66,13 +67,20 @@ export const getAllContacts = async (req, res, next) => {
 };
 
 export const getContactById = async (req, res, next) => {
-  const contact = await Contact.findById(req.params.contactId);
-  if (!contact) {
-    next(createHttpError(404, 'Contact not found'));
+  try {
+    const { contactId } = req.params;
+
+    const contact = await getContactByIdService(contactId);
+    if (!contact) {
+      return next(createHttpError(404, 'Contact not found'));
+    }
+
+    res.status(200).json({
+      status: 200,
+      message: `Successfully found contact with id ${contactId}!`,
+      data: contact,
+    });
+  } catch (error) {
+    next(error);
   }
-  res.status(200).json({
-    status: 200,
-    message: `Successfully found contact with id ${req.params.contactId}!`,
-    data: contact,
-  });
 };
