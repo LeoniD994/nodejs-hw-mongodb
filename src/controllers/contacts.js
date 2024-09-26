@@ -5,8 +5,11 @@ import {
   updateContactService,
   deleteContactService,
   getContactByIdService,
+  getAllContactsService,
 } from '../services/contacts.js';
 import { parsePaginationParams } from '../utils/parsePaginationParams.js';
+import { parseSortParams } from '../utils/parseSortParams.js';
+import { parseFilterParams } from '../utils/parseFilterParams.js';
 
 export const createContact = async (req, res, next) => {
   const { name, phoneNumber, email, isFavourite, contactType } = req.body;
@@ -60,14 +63,22 @@ export const deleteContact = async (req, res, next) => {
 
 export const getAllContacts = async (req, res, next) => {
   const { page, perPage } = parsePaginationParams(req.query);
-  const contacts = await Contact.find({
+  const { sortBy, sortOrder } = parseSortParams(req.query);
+  const { type, isFavourite } = parseFilterParams(req.query);
+
+  const result = await getAllContactsService({
     page,
     perPage,
+    sortBy,
+    sortOrder,
+    type,
+    isFavourite,
   });
+
   res.status(200).json({
     status: 200,
     message: 'Successfully found contacts!',
-    data: contacts,
+    data: result,
   });
 };
 
