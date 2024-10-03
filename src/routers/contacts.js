@@ -14,20 +14,26 @@ import {
 } from '../validation/contacts.js';
 import { ctrlWrapper } from '../utils/ctrlWrapper.js';
 
-const router = Router();
-router.patch(
-  '/contacts/:contactId',
+const contactsRouter = Router();
+contactsRouter.patch(
+  '/:contactId',
   isValidId,
   validateBody(updateContactSchema),
   ctrlWrapper(updateContact),
 );
-router.post(
+contactsRouter.post(
   '/contacts',
   validateBody(createContactSchema),
   ctrlWrapper(createContact),
 );
-router.delete('/contacts/:contactId', isValidId, ctrlWrapper(deleteContact));
-router.get('/contacts', ctrlWrapper(getAllContacts));
-router.get('/contacts/:contactId', isValidId, ctrlWrapper(getContactById));
+contactsRouter.delete('/:contactId', isValidId, ctrlWrapper(deleteContact));
 
-export default router;
+contactsRouter.post(
+  '/register',
+  validateBody(createContactSchema),
+  ctrlWrapper(createContact),
+);
+contactsRouter.get('/', ctrlWrapper(getAllContacts));
+contactsRouter.get('/:contactId', isValidId, ctrlWrapper(getContactById));
+
+export default contactsRouter;
