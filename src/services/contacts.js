@@ -1,9 +1,9 @@
 import Contact from '../models/contact.js';
 import { calculatePaginationData } from '../utils/calculatePaginationData.js';
 
-export const updateContactService = async (contactId, contactData) => {
+export const updateContactService = async (contactId, userId, contactData) => {
   const updatedContact = await Contact.findOneAndUpdate(
-    { _id: contactId },
+    { _id: contactId, userId },
     contactData,
     { new: true },
   );
@@ -16,8 +16,11 @@ export const createContactService = async (contactData) => {
   return newContact;
 };
 
-export const deleteContactService = async (contactId) => {
-  const deletedContact = await Contact.findByIdAndDelete(contactId);
+export const deleteContactService = async (contactId, userId) => {
+  const deletedContact = await Contact.findOneAndDelete({
+    _id: contactId,
+    userId,
+  });
 
   return deletedContact;
 };
@@ -29,13 +32,14 @@ export const getAllContactsService = async ({
   sortOrder,
   type,
   isFavourite,
+  userId,
 }) => {
-  const filters = {};
+  const filters = { userId };
 
   if (type) filters.contactType = type;
   if (typeof isFavourite === 'boolean') filters.isFavourite = isFavourite;
 
-  const totalItems = await Contact.countDocuments();
+  const totalItems = await Contact.countDocuments(filters);
 
   const contacts = await Contact.find(filters)
     .sort({ [sortBy]: sortOrder === 'asc' ? 1 : -1 })
@@ -50,9 +54,9 @@ export const getAllContactsService = async ({
   };
 };
 
-export const getContactByIdService = async (contactId) => {
+export const getContactByIdService = async (contactId, userId) => {
   try {
-    const contact = await Contact.findById(contactId);
+    const contact = await Contact.findById({ _id: contactId, userId });
     return contact;
   } catch (error) {
     throw error;

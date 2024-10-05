@@ -65,6 +65,7 @@ export const getAllContacts = async (req, res, next) => {
   const { page, perPage } = parsePaginationParams(req.query);
   const { sortBy, sortOrder } = parseSortParams(req.query);
   const { type, isFavourite } = parseFilterParams(req.query);
+  const { _id: userId } = req.user;
 
   const result = await getAllContactsService({
     page,
@@ -73,6 +74,7 @@ export const getAllContacts = async (req, res, next) => {
     sortOrder,
     type,
     isFavourite,
+    userId,
   });
 
   res.status(200).json({
