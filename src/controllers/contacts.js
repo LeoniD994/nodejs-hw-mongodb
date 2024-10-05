@@ -4,7 +4,6 @@ import {
   createContactService,
   updateContactService,
   deleteContactService,
-  getContactByIdService,
   getAllContactsService,
 } from '../services/contacts.js';
 import { parsePaginationParams } from '../utils/parsePaginationParams.js';
@@ -24,6 +23,7 @@ export const createContact = async (req, res, next) => {
     email,
     isFavourite,
     contactType,
+    userId: req.user._id,
   });
 
   res.status(201).json({
@@ -86,7 +86,10 @@ export const getContactById = async (req, res, next) => {
   try {
     const { contactId } = req.params;
 
-    const contact = await getContactByIdService(contactId);
+    const contact = await Contact.findOne({
+      _id: contactId,
+      userId: req.user._id,
+    });
     if (!contact) {
       return next(createHttpError(404, 'Contact not found'));
     }
