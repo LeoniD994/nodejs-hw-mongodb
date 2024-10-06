@@ -1,10 +1,10 @@
-import Contact from '../models/contact.js';
 import createHttpError from 'http-errors';
 import {
   createContactService,
   updateContactService,
   deleteContactService,
   getAllContactsService,
+  getContactByIdService,
 } from '../services/contacts.js';
 import { parsePaginationParams } from '../utils/parsePaginationParams.js';
 import { parseSortParams } from '../utils/parseSortParams.js';
@@ -14,7 +14,9 @@ export const createContact = async (req, res, next) => {
   const { name, phoneNumber, email, isFavourite, contactType } = req.body;
 
   if (!name || !phoneNumber || !contactType) {
-    next(createError(400, 'Name, phoneNumber, and contactType are required.'));
+    next(
+      createHttpError(400, 'Name, phoneNumber, and contactType are required.'),
+    );
   }
 
   const newContact = await createContactService({
@@ -35,8 +37,12 @@ export const createContact = async (req, res, next) => {
 
 export const updateContact = async (req, res, next) => {
   const { contactId } = req.params;
-  const contactData = req.body;
-  const updatedContact = await updateContactService(contactId, contactData);
+  const { _id: userId } = req.user;
+  const updatedContact = await updateContactService(
+    contactId,
+    userId,
+    req.body,
+  );
 
   if (!updatedContact) {
     next(createHttpError(404, 'Contact not found'));
@@ -51,8 +57,9 @@ export const updateContact = async (req, res, next) => {
 
 export const deleteContact = async (req, res, next) => {
   const { contactId } = req.params;
+  const { _id: userId } = req.user;
 
-  const deletedContact = await deleteContactService(contactId);
+  const deletedContact = await deleteContactService(contactId, userId);
 
   if (!deletedContact) {
     next(createHttpError(404, 'Contact not found'));
@@ -87,11 +94,10 @@ export const getAllContacts = async (req, res, next) => {
 export const getContactById = async (req, res, next) => {
   try {
     const { contactId } = req.params;
+    const { _id: userId } = req.user;
 
-    const contact = await Contact.findOne({
-      _id: contactId,
-      userId: req.user._id,
-    });
+    const contact = await getContactByIdService(contactId, userId);
+
     if (!contact) {
       return next(createHttpError(404, 'Contact not found'));
     }

@@ -55,10 +55,7 @@ export const getAllContactsService = async ({
 };
 
 export const getContactByIdService = async (contactId, userId) => {
-  try {
-    const contact = await Contact.findById({ _id: contactId, userId });
-    return contact;
-  } catch (error) {
-    throw error;
-  }
+  const contact = await Contact.findOne({ _id: contactId, userId });
+
+  return contact;
 };
