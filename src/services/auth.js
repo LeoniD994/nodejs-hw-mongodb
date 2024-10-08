@@ -137,6 +137,17 @@ export const requestResetToken = async (email) => {
     subject: 'Reset your password',
     html,
   });
+  try {
+    await sendEmail({
+      from: env(SMTP.SMTP_FROM),
+      to: email,
+      subject: 'Reset your password',
+      html,
+    });
+  } catch (error) {
+    console.error('Failed to send email:', error);
+    throw createHttpError(500, 'Failed to send the email, please try again later.');
+  }
 };
 
 export const resetPassword = async (payload) => {
@@ -164,4 +175,6 @@ export const resetPassword = async (payload) => {
     { _id: user._id },
     { password: encryptedPassword },
   );
+
+  await SessionsCollection.deleteMany({ userId: user._id });
 };
