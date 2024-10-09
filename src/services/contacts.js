@@ -4,7 +4,7 @@ import { calculatePaginationData } from '../utils/calculatePaginationData.js';
 export const updateContactService = async (contactId, userId, contactData) => {
   const updatedContact = await Contact.findOneAndUpdate(
     { _id: contactId, userId },
-    contactData,
+    { $set: contactData },
     { new: true },
   );
   return updatedContact;

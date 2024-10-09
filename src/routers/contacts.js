@@ -14,17 +14,20 @@ import {
   updateContactSchema,
 } from '../validation/contacts.js';
 import { ctrlWrapper } from '../utils/ctrlWrapper.js';
+import { upload } from '../middlewares/multer.js';
 
 const contactsRouter = Router();
 contactsRouter.use(authenticate);
 contactsRouter.patch(
   '/:contactId',
   isValidId,
+  upload.single('photo'),
   validateBody(updateContactSchema),
   ctrlWrapper(updateContact),
 );
 contactsRouter.post(
   '/contacts',
+  upload.single('photo'),
   validateBody(createContactSchema),
   ctrlWrapper(createContact),
 );

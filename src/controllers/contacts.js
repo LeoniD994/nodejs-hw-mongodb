@@ -9,9 +9,11 @@ import {
 import { parsePaginationParams } from '../utils/parsePaginationParams.js';
 import { parseSortParams } from '../utils/parseSortParams.js';
 import { parseFilterParams } from '../utils/parseFilterParams.js';
+import { saveFileToUploadDir } from '../utils/saveFileToUploadDir.js';
 
 export const createContact = async (req, res, next) => {
   const { name, phoneNumber, email, isFavourite, contactType } = req.body;
+  const photo = req.file;
 
   if (!name || !phoneNumber || !contactType) {
     next(
@@ -38,11 +40,20 @@ export const createContact = async (req, res, next) => {
 export const updateContact = async (req, res, next) => {
   const { contactId } = req.params;
   const { _id: userId } = req.user;
-  const updatedContact = await updateContactService(
-    contactId,
-    userId,
-    req.body,
-  );
+  const photo = req.file;
+  let photoUrl;
+
+  if (photo) {
+    if (env('ENABLE_CLOUDINARY') === 'true') {
+      photoUrl = await saveFileToCloudinary(photo);
+    } else {
+      photoUrl = await saveFileToUploadDir(photo);
+    }
+  }
+  const updatedContact = await updateContactService(contactId, userId, {
+    ...req.body,
+    photo: photoUrl,
+  });
 
   if (!updatedContact) {
     next(createHttpError(404, 'Contact not found'));
