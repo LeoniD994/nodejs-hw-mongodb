@@ -10,6 +10,8 @@ import { parsePaginationParams } from '../utils/parsePaginationParams.js';
 import { parseSortParams } from '../utils/parseSortParams.js';
 import { parseFilterParams } from '../utils/parseFilterParams.js';
 import { saveFileToUploadDir } from '../utils/saveFileToUploadDir.js';
+import { saveFileToCloudinary } from '../utils/saveFileToCloudinary.js';
+import { env } from '../utils/env.js';
 
 export const createContact = async (req, res, next) => {
   const { name, phoneNumber, email, isFavourite, contactType } = req.body;
@@ -20,7 +22,14 @@ export const createContact = async (req, res, next) => {
       createHttpError(400, 'Name, phoneNumber, and contactType are required.'),
     );
   }
-
+  let photoUrl;
+  if (photo) {
+    if (env('ENABLE_CLOUDINARY') === 'true') {
+      photoUrl = await saveFileToCloudinary(photo);
+    } else {
+      photoUrl = await saveFileToUploadDir(photo);
+    }
+  }
   const newContact = await createContactService({
     name,
     phoneNumber,
@@ -28,6 +37,7 @@ export const createContact = async (req, res, next) => {
     isFavourite,
     contactType,
     userId: req.user._id,
+    photo: photoUrl,
   });
 
   res.status(201).json({
@@ -38,32 +48,37 @@ export const createContact = async (req, res, next) => {
 };
 
 export const updateContact = async (req, res, next) => {
-  const { contactId } = req.params;
-  const { _id: userId } = req.user;
-  const photo = req.file;
-  let photoUrl;
+  try {
+    const { contactId } = req.params;
+    const { _id: userId } = req.user;
+    const photo = req.file;
+    let photoUrl;
 
-  if (photo) {
-    if (env('ENABLE_CLOUDINARY') === 'true') {
-      photoUrl = await saveFileToCloudinary(photo);
-    } else {
-      photoUrl = await saveFileToUploadDir(photo);
+    if (photo) {
+      if (env('ENABLE_CLOUDINARY') === 'true') {
+        photoUrl = await saveFileToCloudinary(photo);
+      } else {
+        photoUrl = await saveFileToUploadDir(photo);
+      }
     }
-  }
-  const updatedContact = await updateContactService(contactId, userId, {
-    ...req.body,
-    photo: photoUrl,
-  });
 
-  if (!updatedContact) {
-    next(createHttpError(404, 'Contact not found'));
-  }
+    const updatedContact = await updateContactService(contactId, userId, {
+      ...req.body,
+      photo: photoUrl,
+    });
 
-  res.status(200).json({
-    status: 200,
-    message: 'Successfully patched a contact!',
-    data: updatedContact,
-  });
+    if (!updatedContact) {
+      return next(createHttpError(404, 'Contact not found'));
+    }
+
+    res.status(200).json({
+      status: 200,
+      message: 'Successfully patched a contact!',
+      data: updatedContact,
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 export const deleteContact = async (req, res, next) => {
