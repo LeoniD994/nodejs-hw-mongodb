@@ -16,12 +16,12 @@ import { env } from '../utils/env.js';
 export const createContact = async (req, res, next) => {
   const { name, phoneNumber, email, isFavourite, contactType } = req.body;
   const photo = req.file;
-
   if (!name || !phoneNumber || !contactType) {
-    next(
+    return next(
       createHttpError(400, 'Name, phoneNumber, and contactType are required.'),
     );
   }
+
   let photoUrl;
   if (photo) {
     if (env('ENABLE_CLOUDINARY') === 'true') {

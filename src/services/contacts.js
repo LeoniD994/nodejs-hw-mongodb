@@ -12,7 +12,6 @@ export const updateContactService = async (contactId, userId, contactData) => {
 
 export const createContactService = async (contactData) => {
   const newContact = await Contact.create(contactData);
-
   return newContact;
 };
 
