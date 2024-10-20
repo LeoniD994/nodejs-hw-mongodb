@@ -12,7 +12,7 @@ tags:
   - name: Auth
     description: Auth operations.
 servers:
-  - url: https://contacts-app-woeq.onrender.com/api-docs
+  - url: https://contacts-app-woeq.onrender.com/
 paths:
   /contacts:
     get:

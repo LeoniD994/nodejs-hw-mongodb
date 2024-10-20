@@ -11,7 +11,7 @@
   },
   "servers": [
     {
-      "url": "https://contacts-app-woeq.onrender.com/api-docs"
+      "url": "https://contacts-app-woeq.onrender.com/"
     }
   ],
   "tags": [
